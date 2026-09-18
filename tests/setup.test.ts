@@ -29,14 +29,18 @@ test("setup twice leaves one block per rc file, uninstall removes it", () => {
   writeFileSync(fish, "");
 
   writeShims();
-  expect(installRc().changed.sort()).toEqual([fish, zshrc].sort());
+  // .zshenv gets created next to an existing .zshrc: non-interactive zsh reads only that.
+  const zshenv = join(HOME, ".zshenv");
+  expect(installRc().changed.sort()).toEqual([fish, zshenv, zshrc].sort());
   expect(installRc()).toMatchObject({ changed: [] }); // second run changes nothing
-  expect(installRc().targets).toHaveLength(2);
+  expect(installRc().targets).toHaveLength(3);
+  expect(readFileSync(zshenv, "utf8")).toContain(`export PATH='${SHIMS}':"$PATH"`);
   expect(shimsCurrent()).toBe(true);
   expect(readFileSync(zshrc, "utf8").match(/# --- fvx ---/g)).toHaveLength(1);
   expect(readFileSync(zshrc, "utf8")).toContain(`export PATH='${SHIMS}':"$PATH"`);
   expect(readFileSync(fish, "utf8")).toContain(`fish_add_path --prepend '${SHIMS}'`);
   expect(existsSync(join(HOME, ".bashrc"))).toBe(false); // absent rc files stay absent
+  expect(existsSync(join(HOME, ".bash_profile"))).toBe(false);
 
   uninstall();
   expect(readFileSync(zshrc, "utf8")).toBe("export EDITOR=vim\n\n");
