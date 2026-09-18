@@ -1,0 +1,91 @@
+.github/scripts/bump-formula.sh
+  s_edf31624b856b2::t_30fcb4f7d9f7d4 1-130
+.github/scripts/publish-npm.sh
+  s_edf31624b856b2::t_a002128e899253 1-109
+.github/workflows/release.yml
+  s_edf31624b856b2::t_26bfd3fd0a5368 1-111
+.github/workflows/test.yml
+  s_edf31624b856b2::t_0f6616e84d799e 1-27
+.gitignore
+  s_edf31624b856b2::t_1b618b2e63d3e5 1-8
+AGENTS.md
+  s_edf31624b856b2::t_b4489b04606f42 1-44
+CLAUDE.md
+  s_edf31624b856b2::t_058bee4718d112 1
+LICENSE
+  s_edf31624b856b2::t_8a92204c7b4b34 1-21
+README.md
+  s_f2339f53887c55::t_3a631c56ced8a0 1-106
+bin/fvx.ts
+  s_edf31624b856b2::t_f8b46c6022b76c 1-76
+bun.lock
+  s_edf31624b856b2::t_fa49c79e1f1bc2 1-24
+bunfig.toml
+  s_edf31624b856b2::t_11d47e6e02466b 1-4
+man/fvx.1
+  s_f2339f53887c55::t_dd8b082347972a 1-181
+npm/launcher.cjs
+  s_edf31624b856b2::t_d60041163e17fe 1-33
+package.json
+  s_edf31624b856b2::t_f88040ea64704f 1-35
+src/commands.ts
+  s_edf31624b856b2::t_28202c7846c082 1-243
+src/completions.ts
+  s_edf31624b856b2::t_47eb56109b6a8f 1-76
+src/install.ts
+  s_edf31624b856b2::t_f08aecb110ccc7 1-140
+src/paths.ts
+  s_edf31624b856b2::t_d302c4ca1bb58d 1-28
+src/resolve.ts
+  s_edf31624b856b2::t_8a6d75506896a4 1-190
+src/sdks.ts
+  s_edf31624b856b2::t_701bdcfb9552f9 1-109
+src/setup.ts
+  s_edf31624b856b2::t_ae566278ab3f55 1-145
+src/ui.ts
+  s_edf31624b856b2::t_4ff73ad04e295a 1-20
+src/upgrade.ts
+  s_edf31624b856b2::t_7768c39c08e119 1-101
+src/version.ts
+  s_edf31624b856b2::t_e7b45b9fd57063 1-2
+tests/helpers.ts
+  s_edf31624b856b2::t_cc40586644c9bd 1-31
+tests/install.test.ts
+  s_edf31624b856b2::t_c3f1f3d8502ba2 1-83
+tests/preload.ts
+  s_edf31624b856b2::t_095e0b184463a8 1-7
+tests/resolve.test.ts
+  s_edf31624b856b2::t_45acfd43f08d7b 1-113
+tests/setup.test.ts
+  s_edf31624b856b2::t_f8cbabdd0d5d15 1-44
+tests/shim.test.ts
+  s_edf31624b856b2::t_782339233f95a0 1-59
+tests/upgrade.test.ts
+  s_edf31624b856b2::t_9ba313bf80b756 1-21
+tsconfig.json
+  s_edf31624b856b2::t_ea3b8e9e103194 1-15
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "032d4bbc1c206562bb148631347cf95ccae04fe0",
+  "prompts": {},
+  "sessions": {
+    "s_edf31624b856b2": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c51d6a5d-c005-44eb-a5a1-71ee8cb96c4a",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Abdul Rafay <99marafay@gmail.com>"
+    },
+    "s_f2339f53887c55": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "eb45518d-873c-45dd-98a5-a12264b25f07",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Abdul Rafay <99marafay@gmail.com>"
+    }
+  }
+}
