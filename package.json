@@ -1,0 +1,35 @@
+{
+  "name": "fvx",
+  "version": "0.1.0",
+  "description": "Per-project Flutter SDK switching. Run flutter in any folder and get the version that folder pins.",
+  "type": "module",
+  "bin": {
+    "fvx": "bin/fvx.ts"
+  },
+  "scripts": {
+    "test": "bun test",
+    "typecheck": "tsc --noEmit",
+    "build": "bun build ./bin/fvx.ts --compile --outfile dist/fvx && (codesign --force --sign - dist/fvx 2>/dev/null || true)"
+  },
+  "files": [
+    "bin"
+  ],
+  "engines": {
+    "bun": ">=1.2.21"
+  },
+  "keywords": [
+    "flutter",
+    "flutter-sdk",
+    "dart",
+    "version-manager",
+    "fvm",
+    "cli",
+    "developer-tools",
+    "bun"
+  ],
+  "license": "MIT",
+  "devDependencies": {
+    "@types/bun": "latest",
+    "typescript": "^5.9.0"
+  }
+}

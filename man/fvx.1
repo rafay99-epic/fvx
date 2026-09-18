@@ -1,0 +1,181 @@
+.TH FVX 1 "September 2026" "fvx" "User Commands"
+.SH NAME
+fvx \- per-project Flutter SDK switching, no cd hook required
+.SH SYNOPSIS
+.B fvx
+.I command
+.RI [ args ]
+.SH DESCRIPTION
+.B fvx
+installs two shims, named \fBflutter\fR and \fBdart\fR, first on PATH. Each shim
+runs \fBfvx resolve\fR to find the SDK the current folder pins, then execs the
+real binary from that SDK. Because the shims sit on PATH itself, every shell,
+script, editor and agent that calls \fBflutter\fR or \fBdart\fR gets the pinned
+version automatically. No \fBcd\fR hook is involved.
+.PP
+A version pin is looked up in this order: the \fBFVX_VERSION\fR environment
+variable first; otherwise, walking up from the working directory toward
+\fI$HOME\fR, each directory is checked for \fI.fvmrc\fR, then
+\fI.fvm/fvm_config.json\fR, then \fI.tool-versions\fR, then the
+\fBenvironment.flutter\fR range in \fIpubspec.yaml\fR. The first directory with
+an answer wins. When no directory has one, the global default symlink at
+\fI~/.flutter-sdk/current\fR is used.
+.PP
+A pin from \fIpubspec.yaml\fR is a range, not an exact version. The global
+default is kept if it satisfies the range; otherwise the highest installed
+version that satisfies it is used. An exact pin, or a range that no installed
+version satisfies, is an error: \fBfvx\fR never falls back to a different
+version silently. It prints what to install and exits non-zero.
+.PP
+If the \fBfvx\fR binary itself is not on PATH (for example after an
+uninstall), the shims exec the global default's binary directly, so
+\fBflutter\fR keeps working, just without project pins.
+.SH COMMANDS
+.TP
+.B fvx setup \fR[\fB\-\-print\fR|\fB\-\-uninstall\fR]
+Write the \fBflutter\fR and \fBdart\fR shims to \fI~/.fvx/shims\fR and add the
+PATH line that puts them first, to \fI~/.zshrc\fR, \fI~/.bashrc\fR and the
+fish config, whichever already exist (or the file for \fB$SHELL\fR if none
+do). \fB\-\-print\fR shows the PATH line for each shell without writing
+anything. \fB\-\-uninstall\fR removes the shims and the PATH block. Also
+prints the VS Code / Cursor setting to add once:
+\fB"dart.getFlutterSdkCommand": { "executable": "fvx", "args": ["resolve"] }\fR.
+.TP
+.B fvx use \fR[\fIversion\fR]
+Pin the current directory to \fIversion\fR by writing or updating
+\fI.fvmrc\fR there. Without a version, an interactive picker lists installed
+SDKs, using \fBfzf\fR when it is available. Warns if \fIversion\fR is not
+installed yet.
+.TP
+.B fvx default \fR[\fIversion\fR]
+Set the global default SDK, used by any folder with no pin of its own.
+Without a version, an interactive picker is shown.
+.TP
+.B fvx current
+Show the version the current folder resolves to, and why: a pin file, or the
+global default.
+.TP
+.B fvx which
+Print the path to the real \fBflutter\fR binary the current folder resolves
+to.
+.TP
+.B fvx ls\fR (or \fBlist\fR) [\fB\-\-labels\fR]
+List installed SDKs, marking the global default and the one the current
+folder resolves to, and flagging any SDK folder whose name no longer matches
+the Flutter version inside it. \fB\-\-labels\fR prints one label per line, for
+scripting and shell completion.
+.TP
+.B fvx install \fR[\fIversion\fR]
+Download an official Flutter SDK into \fI~/.flutter-sdk\fR, verifying it
+against Google's published checksum for the release. Without a version,
+installs the exact version pinned by the current folder, if there is one.
+The first SDK installed on a machine becomes the default automatically.
+.TP
+.B fvx rm \fIversion\fR \fR[\fB\-\-yes\fR] (alias: \fBremove\fR)
+Delete an installed SDK. Refuses to remove the current global default.
+Asks for confirmation on a terminal; scripts must pass \fB\-\-yes\fR.
+.TP
+.B fvx doctor
+Check the setup: the shims are written and current, they come first on PATH,
+a global default is set, the current folder resolves, and installed SDK
+folder names still match the Flutter version inside them. Exits non-zero if
+any check fails.
+.TP
+.B fvx upgrade \fR[\fB\-\-check\fR]
+Check GitHub for a newer \fBfvx\fR release and run the matching upgrade
+command for however it was installed (Homebrew, or npm/bun), or print the
+release URL for a plain binary install. \fB\-\-check\fR only reports whether
+an update is available, without running anything.
+.TP
+.B fvx completions \fIzsh\fR|\fIbash\fR|\fIfish\fR (alias: \fBcompletion\fR)
+Print a shell completion script for the given shell.
+.TP
+.B fvx resolve
+Print the SDK root the current folder resolves to, or exit non-zero with an
+explanation. This is what the shims call on every \fBflutter\fR and
+\fBdart\fR invocation; it does no network or process work.
+.TP
+.B fvx version \fR(or \fB\-v\fR, \fB\-\-version\fR)
+Print the \fBfvx\fR version.
+.TP
+.B fvx help \fR(or \fB\-h\fR, \fB\-\-help\fR)
+Show the command reference. Also shown when no command is given.
+.SH ENVIRONMENT
+.TP
+.B FVX_VERSION
+Use this version in the current shell, overriding any pin file. Checked
+before any directory is walked.
+.TP
+.B FLUTTER_SDK_HOME
+Where SDKs are installed and looked up. Default: \fI~/.flutter-sdk\fR.
+.TP
+.B FVX_HOME
+Relocate everything \fBfvx\fR touches, including the SDK folder, the global
+default symlink, the shims, and where the pin walk stops climbing toward
+\fI$HOME\fR, under this directory. A fully isolated sandbox, useful for
+testing.
+.TP
+.B FLUTTER_STORAGE_BASE_URL
+Mirror to download SDKs from instead of Google's storage, honored by
+\fBfvx install\fR the same way the Flutter tool itself honors it.
+.TP
+.B FVX_DEBUG
+Print the full stack trace on an unexpected error, instead of one clean
+line.
+.TP
+.B NO_COLOR
+Disable colored output.
+.SH FILES
+.TP
+.I ~/.flutter-sdk/<label>/flutter
+Root of one installed SDK. \fIlabel\fR is usually the version number, but can
+be anything.
+.TP
+.I ~/.flutter-sdk/current
+Symlink to the global default SDK.
+.TP
+.I ~/.fvx/shims/flutter
+.TP
+.I ~/.fvx/shims/dart
+The shims placed first on PATH by \fBfvx setup\fR.
+.TP
+.I .fvmrc
+Per-project pin written by \fBfvx use\fR, and the first file checked when
+resolving a folder.
+.SH EXAMPLES
+.PP
+Pin a project, install its SDK, and confirm it resolves:
+.PP
+.RS
+.nf
+cd ~/Code/app
+fvx use 3.22.3
+fvx install 3.22.3
+fvx current
+.fi
+.RE
+.PP
+Enable the shims once per machine:
+.PP
+.RS
+.nf
+fvx setup
+exec zsh
+.fi
+.RE
+.SH EXIT STATUS
+.TP
+.B 0
+Success.
+.TP
+.B 1
+An error: an unresolved pin, a missing SDK, a failed \fBdoctor\fR check, or
+similar.
+.TP
+.B 130
+Cancelled at an interactive prompt (a picker or a delete confirmation).
+.SH SEE ALSO
+.BR flutter (1),
+.B fvm
+.PP
+Project home: https://github.com/rafay99-epic/fvx

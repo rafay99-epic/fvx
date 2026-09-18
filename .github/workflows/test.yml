@@ -1,0 +1,27 @@
+name: test
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+      - run: bun install --frozen-lockfile
+      - run: bun run typecheck
+      - run: bun test
+      - name: release-style build compiles
+        shell: bash
+        run: |
+          bun build ./bin/fvx.ts --compile --minify --outfile out/fvx
+          ./out/fvx version
+        env:
+          FVX_HOME: ${{ runner.temp }}/fvx-ci-home
