@@ -28,10 +28,12 @@ Both ship a prebuilt binary. Nothing gets compiled on your machine. Homebrew is 
 Then, once:
 
 ```sh
-fvx setup      # writes the shims, adds one PATH line to .zshrc, .bashrc and config.fish
+fvx setup      # writes the shims, adds one PATH line to your zsh, bash and fish startup files
 ```
 
 Restart your shell. If you manage your rc files yourself, `fvx setup --print` shows the lines and edits nothing.
+
+For zsh the line goes into both `.zshenv` and `.zshrc`. `.zshenv` is the only file a non-interactive zsh reads, which is what scripts and coding agents run in. The shim also records where `fvx` was installed, so it still finds it in a shell whose PATH lacks `/opt/homebrew/bin`.
 
 ## Where versions come from
 

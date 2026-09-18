@@ -25,7 +25,8 @@ binaries through GitHub Releases, Homebrew (`rafay99-epic/homebrew-apps`) and np
 - `resolve`, `which` and `ls --labels` are scripting surfaces. No decoration.
 - A pinned version that isn't installed is an error. Never fall back to another
   version silently.
-- The shim text lives in `src/setup.ts`. `doctor` compares it byte for byte, so
+- The shim text lives in `src/setup.ts` and records the absolute fvx path at setup
+  time, because non-login shells have the shims on PATH but not Homebrew. `doctor` compares it byte for byte, so
   changing it means users re-run `fvx setup`.
 - A pin is untrusted text from any cloned repo, and a label becomes a path under
   the SDK folder. Everything goes through `isLabel` in `src/sdks.ts`. `fvx rm ..`

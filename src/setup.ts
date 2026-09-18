@@ -21,26 +21,35 @@ const BLOCK_END = "# --- end fvx ---";
 const shellQuote = (s: string) => `'${s.replaceAll("'", `'\\''`)}'`;
 
 /**
- * If fvx itself is gone (uninstalled, or missing from a stripped-down PATH) the
- * shim runs the global default so `flutter` keeps working.
- * ponytail: that fallback skips project pins. Embed an absolute fvx path here
- * if a PATH without fvx ever shows up in practice.
+ * Where fvx lives, as PATH spells it at setup time (`/opt/homebrew/bin/fvx`, a
+ * symlink that survives upgrades, not the versioned Cellar path behind it).
  */
-export function shimFor(tool: Tool): string {
+export const fvxOnPath = () => Bun.which("fvx") ?? "";
+
+/**
+ * The shim looks fvx up on PATH first, then at the absolute path recorded at
+ * setup time. The second lookup matters: a non-login shell has the shims on
+ * PATH (via ~/.zshenv) but not /opt/homebrew/bin, and without it every agent
+ * and script in such a shell would silently get the default SDK.
+ * Only when fvx is truly gone (uninstalled) does the shim run the global
+ * default, so `flutter` keeps working.
+ */
+export function shimFor(tool: Tool, fvxPath: string = fvxOnPath()): string {
   const fallback = shellQuote(join(DEFAULT_LINK, "bin", tool));
   return `#!/bin/sh
 # fvx shim. Resolve the SDK for $PWD, then become the real binary.
-command -v fvx >/dev/null 2>&1 || exec ${fallback} "$@"
-sdk=$(fvx resolve) || exit $?
+fvx=$(command -v fvx) || fvx=${shellQuote(fvxPath)}
+[ -x "$fvx" ] || exec ${fallback} "$@"
+sdk=$("$fvx" resolve) || exit $?
 exec "$sdk/bin/${tool}" "$@"
 `;
 }
 
-export function writeShims(): void {
+export function writeShims(fvxPath: string = fvxOnPath()): void {
   mkdirSync(SHIMS, { recursive: true });
   for (const tool of TOOLS) {
     const file = join(SHIMS, tool);
-    writeFileSync(file, shimFor(tool));
+    writeFileSync(file, shimFor(tool, fvxPath));
     chmodSync(file, 0o755);
   }
 }
@@ -53,7 +62,12 @@ export function shimsCurrent(): boolean {
   });
 }
 
-type RcFile = { file: string; line: string };
+type RcFile = {
+  file: string;
+  line: string;
+  /** Create `file` when this sibling exists, even if `file` itself doesn't. */
+  createIfExists?: string;
+};
 
 /**
  * The shims dir as the rc line spells it. Under the real home it is written
@@ -68,9 +82,16 @@ function shimsForRc(): string {
 export function rcFiles(): RcFile[] {
   const shims = shimsForRc();
   const posix = `export PATH=${shims}:"$PATH"`;
+  const zshrc = join(HOME, ".zshrc");
   return [
-    { file: join(HOME, ".zshrc"), line: posix },
+    // .zshenv is the only file every zsh reads, including the non-interactive
+    // ones agents and scripts run in. .zshrc still needs the line too: it runs
+    // later, and anything it prepends to PATH would otherwise beat the shims.
+    { file: join(HOME, ".zshenv"), line: posix, createIfExists: zshrc },
+    { file: zshrc, line: posix },
     { file: join(HOME, ".bashrc"), line: posix },
+    // Login bash (macOS Terminal) reads this one and skips .bashrc.
+    { file: join(HOME, ".bash_profile"), line: posix },
     { file: join(HOME, ".config", "fish", "config.fish"), line: `fish_add_path --prepend ${shims}` },
   ];
 }
@@ -112,7 +133,9 @@ function rcForLoginShell(all: RcFile[]): RcFile | undefined {
  */
 export function installRc(): { targets: string[]; changed: string[] } {
   const all = rcFiles();
-  const existing = all.filter(({ file }) => existsSync(file));
+  const existing = all.filter(
+    ({ file, createIfExists }) => existsSync(file) || (createIfExists !== undefined && existsSync(createIfExists)),
+  );
   const fallback = rcForLoginShell(all);
   const targets = existing.length ? existing : fallback ? [fallback] : [];
   const changed = targets.flatMap(({ file, line }) => {

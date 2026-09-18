@@ -16,13 +16,24 @@ beforeAll(() => {
   fakeSdk("3.22.3");
   fakeSdk("3.47.2");
   setDefault(findSdk("3.47.2")!);
-  writeShims();
+  // No recorded path: a real fvx installed on this machine must not leak in.
+  writeShims("");
   // Stand-in for the installed binary: `fvx` on PATH, running the source.
   mkdirSync(fvxBin, { recursive: true });
   const entry = absolute(import.meta.dir, "..", "bin", "fvx.ts");
   writeFileSync(join(fvxBin, "fvx"), `#!/bin/sh\nexec '${process.execPath}' '${entry}' "$@"\n`);
   chmodSync(join(fvxBin, "fvx"), 0o755);
 });
+
+/** Rewrite the shims with a given recorded fvx path, restoring the default after. */
+function withRecordedFvx<T>(fvxPath: string, body: () => T): T {
+  writeShims(fvxPath);
+  try {
+    return body();
+  } finally {
+    writeShims("");
+  }
+}
 
 function run(tool: "flutter" | "dart", args: string[], cwd: string, { withFvx = true } = {}) {
   const path = [SHIMS, ...(withFvx ? [fvxBin] : []), "/usr/bin", "/bin"].join(":");
@@ -53,7 +64,15 @@ test("a missing pinned version fails loudly and runs nothing", () => {
   expect(result.err).toContain("fvx install 3.10.0");
 });
 
-test("without fvx on PATH the shim falls back to the default SDK", () => {
+test("fvx missing from PATH but present at its recorded path still honors the pin", () => {
+  // A non-login shell: shims on PATH through ~/.zshenv, /opt/homebrew/bin not.
+  const dir = project("shim-recorded", { ".fvmrc": `{"flutter":"3.22.3"}` });
+  const out = withRecordedFvx(join(fvxBin, "fvx"), () => run("flutter", ["doctor"], dir, { withFvx: false }).out);
+  expect(out).toBe("flutter 3.22.3 doctor");
+});
+
+test("with fvx gone entirely the shim falls back to the default SDK", () => {
   const dir = project("shim-nofvx", { ".fvmrc": `{"flutter":"3.22.3"}` });
-  expect(run("flutter", ["doctor"], dir, { withFvx: false }).out).toBe("flutter 3.47.2 doctor");
+  const out = withRecordedFvx("/nonexistent/fvx", () => run("flutter", ["doctor"], dir, { withFvx: false }).out);
+  expect(out).toBe("flutter 3.47.2 doctor");
 });

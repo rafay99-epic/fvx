@@ -34,9 +34,12 @@ uninstall), the shims exec the global default's binary directly, so
 .TP
 .B fvx setup \fR[\fB\-\-print\fR|\fB\-\-uninstall\fR]
 Write the \fBflutter\fR and \fBdart\fR shims to \fI~/.fvx/shims\fR and add the
-PATH line that puts them first, to \fI~/.zshrc\fR, \fI~/.bashrc\fR and the
-fish config, whichever already exist (or the file for \fB$SHELL\fR if none
-do). \fB\-\-print\fR shows the PATH line for each shell without writing
+PATH line that puts them first, to \fI~/.zshenv\fR, \fI~/.zshrc\fR,
+\fI~/.bashrc\fR, \fI~/.bash_profile\fR and the fish config, whichever already
+exist (or the file for \fB$SHELL\fR if none do). \fI~/.zshenv\fR is created
+next to an existing \fI~/.zshrc\fR, because it is the only file a
+non\-interactive zsh reads. The shims record the absolute path of \fBfvx\fR at
+setup time, so they still find it in a shell whose PATH lacks it. \fB\-\-print\fR shows the PATH line for each shell without writing
 anything. \fB\-\-uninstall\fR removes the shims and the PATH block. Also
 prints the VS Code / Cursor setting to add once:
 \fB"dart.getFlutterSdkCommand": { "executable": "fvx", "args": ["resolve"] }\fR.
