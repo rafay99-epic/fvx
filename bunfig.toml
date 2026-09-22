@@ -1,5 +1,3 @@
 [test]
-# `bun test` from the repo root runs the CLI suite with the same FVX_HOME
-# sandbox preload that apps/cli/bunfig.toml sets, never the real home dir.
 root = "apps/cli"
 preload = ["./apps/cli/tests/preload.ts"]

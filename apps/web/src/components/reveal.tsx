@@ -1,10 +1,6 @@
 import * as m from "motion/react-m";
 import type { ReactNode } from "react";
 
-/**
- * Fades and lifts its children in the first time they scroll into view.
- * Pass `as="li"` inside lists so the markup stays valid.
- */
 export function Reveal({
   children,
   className,

@@ -4,7 +4,6 @@ import { Reveal } from "@/components/reveal";
 import { Button } from "@/components/ui/button";
 import { type InstallId, install } from "@/content";
 
-/** Closing call to action with a Homebrew / npm switch. */
 export function InstallCta() {
   const [selected, setSelected] = useState<InstallId>("brew");
   const command = install.find((option) => option.id === selected)?.command ?? install[0].command;

@@ -1,10 +1,6 @@
 @import "tailwindcss";
 @import "lenis/dist/lenis.css";
 
-/*
- * Black and white only. shadcn components read the semantic colors below, so
- * every one of them maps to black, white or a single gray.
- */
 @theme {
   --font-sans: "Geist", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "Geist Mono", ui-monospace, Menlo, monospace;
@@ -35,8 +31,30 @@
   }
 }
 
-/* Outlined words in the scrolling band. */
 @utility text-outline {
   -webkit-text-stroke: 1.5px currentColor;
   color: transparent;
+}
+
+@keyframes intro-type {
+  from {
+    width: 0;
+  }
+}
+
+@keyframes intro-caret {
+  to {
+    border-color: transparent;
+  }
+}
+
+.intro-type {
+  box-sizing: content-box;
+  display: inline-block;
+  overflow: hidden;
+  white-space: nowrap;
+  border-right: 0.55em solid currentColor;
+  animation:
+    intro-type 0.6s both,
+    intro-caret 0.01s forwards;
 }

@@ -12,7 +12,6 @@ export const Route = createFileRoute("/")({ component: Home });
 function Home() {
   return (
     <>
-      <title>fvx: per-project Flutter SDK switching</title>
       <VersionHero />
       <PinWalk />
       <PinSources />

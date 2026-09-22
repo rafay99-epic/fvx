@@ -6,7 +6,6 @@ import "./styles.css";
 
 const router = createRouter({ routeTree, scrollRestoration: true, defaultPreload: "intent" });
 
-// Registers the router so every <Link to> and navigate() is checked against the real routes.
 declare module "@tanstack/react-router" {
   interface Register {
     router: typeof router;

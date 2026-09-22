@@ -7,7 +7,6 @@ export const Route = createFileRoute("/about")({ component: About });
 function About() {
   return (
     <article className="px-[4vw] pt-40 pb-32">
-      <title>About fvx</title>
       <Reveal>
         <h1 className="text-[18vw] font-extrabold leading-[0.85] tracking-[-0.06em] md:text-[12vw]">
           Why

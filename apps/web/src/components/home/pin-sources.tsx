@@ -1,7 +1,6 @@
 import { Reveal } from "@/components/reveal";
 import { pinSources } from "@/content";
 
-/** The resolution order, one large numbered row per source. */
 export function PinSources() {
   return (
     <section className="border-t border-line px-[4vw] py-[12vw] md:py-32">
