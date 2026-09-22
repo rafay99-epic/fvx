@@ -1,0 +1,124 @@
+apps/web/public/favicon.svg
+  s_f2e05bc5d23613::t_c8c63c6557a832 1
+apps/web/src/components/home/anywhere-band.tsx
+  s_f2e05bc5d23613::t_b9261e57a3e4a2 3-15,17-25,27-30
+  s_f2e05bc5d23613::t_a768504ad50a20 1-2,16,26
+apps/web/src/components/home/usage.tsx
+  s_f2e05bc5d23613::t_23a0b172d8eb49 14-19
+  s_f2e05bc5d23613::t_b9261e57a3e4a2 1-13,20-46
+apps/cli/tsconfig.json
+  s_f2e05bc5d23613::t_f93fdfa1a3ef41 1-8
+.github/workflows/release.yml
+  s_f2e05bc5d23613::t_757f26fb4b941d 12,44-45,51,55
+apps/web/components.json
+  s_f2e05bc5d23613::t_c8c63c6557a832 1-20
+apps/web/src/components/copy-button.tsx
+  s_f2e05bc5d23613::t_d16480223875b0 1-25
+apps/web/src/components/site-footer.tsx
+  s_f2e05bc5d23613::t_d16480223875b0 1-14
+apps/web/src/components/site-nav.tsx
+  s_f2e05bc5d23613::t_d16480223875b0 1-5,7-8,10-26
+  s_f2e05bc5d23613::t_79fa938cc2ff60 6,9
+apps/web/src/components/home/features.tsx
+  s_f2e05bc5d23613::t_b9261e57a3e4a2 1-18
+apps/web/src/components/home/pin-walk.tsx
+  s_f2e05bc5d23613::t_b9261e57a3e4a2 3-42,44-49,51-55
+  s_f2e05bc5d23613::t_7b7f21088d1b6d 1-2,43,50
+bunfig.toml
+  s_f2e05bc5d23613::t_f93fdfa1a3ef41 2-5
+.github/workflows/test.yml
+  s_f2e05bc5d23613::t_7231f4f00f29c6 19-21,25
+apps/web/src/components/ui/button.tsx
+  s_f2e05bc5d23613::t_91ff3f3965c941 1-36
+  s_f2e05bc5d23613::t_60747c9df3f0e5 37
+apps/web/src/lib/utils.ts
+  s_f2e05bc5d23613::t_c8c63c6557a832 1-7
+apps/cli/package.json
+  s_f2e05bc5d23613::t_f93fdfa1a3ef41 1-36
+apps/web/src/components/home/pin-sources.tsx
+  s_f2e05bc5d23613::t_23a0b172d8eb49 15-23
+  s_f2e05bc5d23613::t_b9261e57a3e4a2 1-14,24-29
+apps/web/src/routes/__root.tsx
+  s_f2e05bc5d23613::t_80c2cd7ada2bf2 36
+  s_f2e05bc5d23613::t_47a79af55ef24c 1-2,4-35,37-43
+  s_f2e05bc5d23613::t_b448c43b433cd7 3
+apps/web/vercel.json
+  s_f2e05bc5d23613::t_c8c63c6557a832 1-5
+apps/web/index.html
+  s_f2e05bc5d23613::t_c8c63c6557a832 1-22
+apps/web/src/content.ts
+  s_f2e05bc5d23613::t_12d01c28266b0f 105
+  s_f2e05bc5d23613::t_f2be4178c7465f 1-103,106-107
+  s_f2e05bc5d23613::t_3055ec65afe26c 104
+apps/web/vite.config.ts
+  s_f2e05bc5d23613::t_c8c63c6557a832 1-10
+apps/web/src/components/odometer.tsx
+  s_f2e05bc5d23613::t_d16480223875b0 1-3,7-13,15-20,22-23,25-26,28-37
+  s_f2e05bc5d23613::t_79fa938cc2ff60 4-6,14,21,24,27
+apps/web/src/components/home/version-hero.tsx
+  s_f2e05bc5d23613::t_79fa938cc2ff60 21
+  s_f2e05bc5d23613::t_b9261e57a3e4a2 3-20,22-28,30-34
+  s_f2e05bc5d23613::t_54e715aa9bec9d 1-2,29
+apps/web/src/main.tsx
+  s_f2e05bc5d23613::t_47a79af55ef24c 1-23
+apps/web/src/routeTree.gen.ts
+  s_f2e05bc5d23613::t_47a79af55ef24c 1-77
+tsconfig.base.json
+  s_f2e05bc5d23613::t_f93fdfa1a3ef41 1-12
+AGENTS.md
+  s_f2e05bc5d23613::t_f00b35e400b744 6,8-16,20-27,29,46-52,58-61
+apps/web/src/routes/about.tsx
+  s_f2e05bc5d23613::t_2280e5144356ec 19
+  s_f2e05bc5d23613::t_47a79af55ef24c 1-18,20-59
+apps/web/src/routes/index.tsx
+  s_f2e05bc5d23613::t_47a79af55ef24c 1-14,16-25
+  s_f2e05bc5d23613::t_80c2cd7ada2bf2 15
+package.json
+  s_f2e05bc5d23613::t_f93fdfa1a3ef41 2-3,5-6,8-13
+apps/web/src/components/reveal.tsx
+  s_f2e05bc5d23613::t_d16480223875b0 2-3,20,22-28,30-31
+  s_f2e05bc5d23613::t_23a0b172d8eb49 4-18,21,29
+  s_f2e05bc5d23613::t_246f98749f173c 1,19
+.github/scripts/publish-npm.sh
+  s_f2e05bc5d23613::t_757f26fb4b941d 77-78
+README.md
+  s_f2e05bc5d23613::t_f00b35e400b744 87-88,91-94,105
+apps/web/src/components/home/install-cta.tsx
+  s_f2e05bc5d23613::t_b9261e57a3e4a2 1-38
+apps/web/src/styles.css
+  s_f2e05bc5d23613::t_6b25bce2276e52 1-42
+apps/web/package.json
+  s_f2e05bc5d23613::t_66ad7901634978 1-33
+apps/web/tsconfig.json
+  s_f2e05bc5d23613::t_c8c63c6557a832 1-10
+.vscode/settings.json
+  s_7ef1338275a135::t_3a5f57375b59df 1
+apps/cli/bunfig.toml
+  s_f2e05bc5d23613::t_6ee0c32d9c125a 1-4
+bun.lock
+  s_f2e05bc5d23613::t_6ff9b20740afe9 7-13,19-43,46-173,178-231,234-363,367-420
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "59ca2c20910a715c09a942377f0b00b169cf32e9",
+  "prompts": {},
+  "sessions": {
+    "s_7ef1338275a135": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "6eaebe62-2ef7-4611-a2d5-fdaeb713b359",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Abdul Rafay <99marafay@gmail.com>"
+    },
+    "s_f2e05bc5d23613": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "a6f1e9b3-b180-44d1-b0ec-dafd90af8980",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Abdul Rafay <99marafay@gmail.com>"
+    }
+  }
+}
