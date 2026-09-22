@@ -16,8 +16,8 @@ jobs:
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v2
       - run: bun install --frozen-lockfile
-      - run: bun run typecheck # CLI and web
-      - run: bun test # root bunfig.toml points this at apps/cli with the sandbox preload
+      - run: bun run typecheck
+      - run: bun test
       - run: bun run build:web
       - name: release-style build compiles
         shell: bash

@@ -1,11 +1,37 @@
-/**
- * Every string on the site lives here. Components only lay it out, so copy
- * changes never touch JSX. Facts must match the CLI in apps/cli.
- */
+import type { FileRoutesByFullPath } from "./routeTree.gen";
 
 type ExternalLink = { label: string; href?: string };
+type Page = { title: string; description: string };
 type Pin = { version: string; path: string; source: string };
 type Titled = { title: string; body: string };
+
+export const site = {
+  url: "https://fvx.rafay99.com",
+  name: "fvx",
+  image: "/og.png",
+  imageAlt: "fvx. Same command. The folder decides.",
+} as const;
+
+export const pages = {
+  "/": {
+    title: "fvx: per-project Flutter SDK switching",
+    description:
+      "fvx runs the Flutter version each folder pins. Shims on PATH, no cd hook, about 10 ms per lookup. Works in scripts, CI and coding agents.",
+  },
+  "/about": {
+    title: "About fvx",
+    description:
+      "Why fvx resolves the Flutter version when flutter runs instead of on cd, what is not done yet, and who builds it.",
+  },
+} as const satisfies Record<keyof FileRoutesByFullPath, Page>;
+
+export const notFound = { title: "Not found · fvx" } as const;
+
+const pagesByPath: Partial<Record<string, Page>> = pages;
+
+export function titleFor(pathname: string): string {
+  return pagesByPath[pathname.replace(/\/$/, "") || "/"]?.title ?? notFound.title;
+}
 
 export const links = {
   repo: "https://github.com/rafay99-epic/fvx",
@@ -15,7 +41,7 @@ export const links = {
 
 export const footerLinks = [
   { label: "GitHub", href: links.github },
-  { label: "Syntax Lab Technology" }, // TODO: add href once the company URL is known
+  { label: "Syntax Lab Technology" },
   { label: "rafay99.com", href: links.website },
 ] as const satisfies readonly ExternalLink[];
 
@@ -26,7 +52,6 @@ export const install = [
 
 export type InstallId = (typeof install)[number]["id"];
 
-/** The hero rolls from `from` to `to` halfway through its scroll. */
 export const hero = {
   title: "Same command. The folder decides.",
   lede: "fvx puts small flutter and dart shims first on your PATH. Each call reads the pin in the current folder and runs that SDK.",
@@ -34,10 +59,6 @@ export const hero = {
   to: { version: "3.47.2", path: "~/code/new-package", source: "pubspec.yaml" },
 } as const satisfies { title: string; lede: string; from: Pin; to: Pin };
 
-/**
- * The pin walk. `tree` is listed from $HOME down to the working folder, and
- * each step points at the folder being checked by its index in `tree`.
- */
 export const walk = {
   title: "It walks up until it finds a pin.",
   body: "The nearest folder with an answer wins, so a package inside a monorepo can pin differently from the root.",
@@ -52,7 +73,6 @@ export const walk = {
   ],
 } as const;
 
-/** Resolution order inside one folder, then the fallbacks around the walk. */
 export const pinSources = [
   { file: "FVX_VERSION", example: "FVX_VERSION=3.22.3 flutter build apk" },
   { file: ".fvmrc", example: '{"flutter": "3.22.3"}' },

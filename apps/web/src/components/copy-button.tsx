@@ -2,7 +2,6 @@ import { Check, Copy } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 
-/** Copies `text` and shows a check for a moment. */
 export function CopyButton({ text }: { text: string }) {
   const [copied, setCopied] = useState(false);
 

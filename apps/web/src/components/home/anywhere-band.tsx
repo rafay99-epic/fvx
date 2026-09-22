@@ -4,7 +4,6 @@ import { useRef } from "react";
 import { anywhere } from "@/content";
 import { cn } from "@/lib/utils";
 
-/** Oversized words that slide sideways while the section crosses the screen. */
 export function AnywhereBand() {
   const ref = useRef<HTMLElement>(null);
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "end start"] });

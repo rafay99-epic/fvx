@@ -22,7 +22,6 @@ const buttonVariants = cva(
   },
 );
 
-/** shadcn/ui button, restyled to square black and white. `asChild` renders the child element instead. */
 function Button({
   className,
   variant,

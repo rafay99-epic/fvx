@@ -2,7 +2,6 @@ import { CopyButton } from "@/components/copy-button";
 import { Reveal } from "@/components/reveal";
 import { commands, editorSetting, usage } from "@/content";
 
-/** Getting started in three commands, then the full command list. */
 export function Usage() {
   return (
     <section className="border-t border-line px-[4vw] py-[12vw] md:py-32">

@@ -48,7 +48,12 @@ All from the repo root.
 - Every string on the site lives in `apps/web/src/content.ts`. Facts there must
   match the CLI. Update it when a command, pin source or install channel changes.
 - Black and white only. Colors come from the `@theme` block in `src/styles.css`.
-- Motion runs on scroll or on view, never on a loop.
+- Motion runs on scroll or on view, never on a loop. The opening animation plays
+  once per tab on `/` (every reload in dev). Timings live in `src/lib/intro.ts`.
+- Every route needs a title and description in `pages` in `content.ts`. Typecheck
+  fails without one. `seo.ts` writes a static HTML page per route, `404.html`,
+  `sitemap.xml` and `robots.txt` at build time, so crawlers and link previews
+  never need JavaScript.
 
 ## Gotchas
 

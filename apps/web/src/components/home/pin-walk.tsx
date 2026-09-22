@@ -4,10 +4,6 @@ import { useRef, useState } from "react";
 import { walk } from "@/content";
 import { cn } from "@/lib/utils";
 
-/**
- * Sticky scene that plays `walk.steps` as the section scrolls: the highlight
- * climbs the folder tree from the working folder until it hits the pin file.
- */
 export function PinWalk() {
   const ref = useRef<HTMLElement>(null);
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end end"] });
