@@ -16,12 +16,13 @@ jobs:
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v2
       - run: bun install --frozen-lockfile
-      - run: bun run typecheck
-      - run: bun test
+      - run: bun run typecheck # CLI and web
+      - run: bun test # root bunfig.toml points this at apps/cli with the sandbox preload
+      - run: bun run build:web
       - name: release-style build compiles
         shell: bash
         run: |
-          bun build ./bin/fvx.ts --compile --minify --outfile out/fvx
+          bun build ./apps/cli/bin/fvx.ts --compile --minify --outfile out/fvx
           ./out/fvx version
         env:
           FVX_HOME: ${{ runner.temp }}/fvx-ci-home

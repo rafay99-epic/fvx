@@ -84,11 +84,14 @@ Android Studio keeps its own SDK path per project. Xcode and Gradle use the path
 
 ## Development
 
+The repo is a Bun workspace. `apps/cli` is fvx, `apps/web` is the site at [fvx.rafay99.com](https://fvx.rafay99.com).
+
 ```sh
 bun install
-bun test            # runs inside a throwaway FVX_HOME
-bun run typecheck
-bun run build       # dist/fvx
+bun test            # CLI tests, inside a throwaway FVX_HOME
+bun run typecheck   # both apps
+bun run build       # apps/cli/dist/fvx
+bun run dev:web     # the site
 ```
 
 To try it without touching your real setup:
@@ -99,7 +102,7 @@ export FVX_HOME=$(mktemp -d) FLUTTER_SDK_HOME=~/.flutter-sdk
 
 ## Releasing
 
-A merge to `main` that touches `bin/`, `src/`, `man/` or `package.json` builds four binaries, publishes a GitHub release, bumps the Homebrew formula and publishes to npm. The version is `0.<commit count>`. It needs two repo secrets, `TAP_TOKEN` and `NPM_TOKEN`. Without them the release still ships to GitHub and skips that channel with a warning.
+A merge to `main` that touches `apps/cli/` builds four binaries, publishes a GitHub release, bumps the Homebrew formula and publishes to npm. The version is `0.<commit count>`. It needs two repo secrets, `TAP_TOKEN` and `NPM_TOKEN`. Without them the release still ships to GitHub and skips that channel with a warning. The site deploys on Vercel from `apps/web` and skips builds when nothing under it changed.
 
 ## Not yet
 
