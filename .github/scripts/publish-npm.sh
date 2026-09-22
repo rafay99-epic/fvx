@@ -74,8 +74,8 @@ done
 # --- main package: launcher + optionalDependencies --------------------------
 main="$WORK/main"
 mkdir -p "$main"
-cp npm/launcher.cjs "$main/launcher.cjs"
-cp man/fvx.1 "$main/fvx.1"
+cp apps/cli/npm/launcher.cjs "$main/launcher.cjs"
+cp apps/cli/man/fvx.1 "$main/fvx.1"
 cp README.md "$main/README.md"   # shown on the npm package page
 cp LICENSE "$main/LICENSE"
 cat > "$main/package.json" <<JSON
