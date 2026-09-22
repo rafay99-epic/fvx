@@ -1,16 +1,13 @@
-import { useMotionValueEvent, useScroll } from "motion/react";
-import * as m from "motion/react-m";
-import { useRef, useState } from "react";
+import { useRef } from "react";
 import { walk } from "@/content";
+import { useScrollProgress } from "@/lib/scroll";
 import { cn } from "@/lib/utils";
+
+const stepAt = (progress: number) => Math.min(walk.steps.length - 1, Math.floor(progress * walk.steps.length));
 
 export function PinWalk() {
   const ref = useRef<HTMLElement>(null);
-  const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end end"] });
-  const [step, setStep] = useState(0);
-  useMotionValueEvent(scrollYProgress, "change", (progress) =>
-    setStep(Math.min(walk.steps.length - 1, Math.floor(progress * walk.steps.length))),
-  );
+  const step = useScrollProgress(ref, stepAt);
   const current = walk.steps[step] ?? walk.steps[0];
   const found = current.at === walk.foundAt;
 
@@ -36,14 +33,13 @@ export function PinWalk() {
         <div>
           <h2 className="text-5xl font-extrabold leading-none tracking-[-0.05em] md:text-7xl">{walk.title}</h2>
           <p className="mt-6 max-w-[38ch] text-neutral-300 md:text-lg">{walk.body}</p>
-          <m.p
+          <p
             key={step}
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="mt-6 min-h-[3em] font-mono text-sm md:text-base"
+            className="mt-6 min-h-[3em] animate-rise font-mono text-sm [--rise:8px] md:text-base"
+            style={{ animationDuration: "0.4s" }}
           >
             {current.log}
-          </m.p>
+          </p>
         </div>
       </div>
     </section>

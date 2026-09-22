@@ -1,11 +1,10 @@
 import { useEffect, useState } from "react";
 
+/** Seconds from page load. The curtain starts lifting at `shutter`, the hero starts at `hero`. Durations and curves live in the @theme animations in styles.css. */
 export const INTRO = {
-  curtain: 1.5,
+  shutter: 0.93,
   hero: 1.05,
 } as const;
-
-export const EASE_OUT = [0.2, 0.8, 0.2, 1] as const;
 
 type Part = "curtain" | "nav" | "hero";
 
@@ -25,6 +24,7 @@ function shouldPlay(): boolean {
 const playsOnLoad = shouldPlay();
 const played = new Set<Part>();
 
+/** Whether `part` should play the opening animation, and `at(seconds)`, the delay that lands on `seconds` after page load. */
 export function useIntro(part: Part) {
   const [intro] = useState(() => {
     const elapsed = (performance.now() - t0) / 1000;

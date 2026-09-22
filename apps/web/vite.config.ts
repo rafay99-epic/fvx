@@ -5,6 +5,6 @@ import { defineConfig } from "vite";
 import { seo } from "./seo";
 
 export default defineConfig({
-  plugins: [tanstackRouter({ target: "react", autoCodeSplitting: true }), react(), tailwindcss(), seo()],
+  plugins: [tanstackRouter({ target: "react" }), react(), tailwindcss(), seo()],
   resolve: { alias: { "@": new URL("./src", import.meta.url).pathname } },
 });
