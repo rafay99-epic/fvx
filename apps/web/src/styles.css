@@ -1,6 +1,21 @@
 @import "tailwindcss";
 @import "lenis/dist/lenis.css";
 
+/* Latin subsets of Geist, preloaded in index.html so text paints in the right font on first render. */
+@font-face {
+  font-family: "Geist";
+  font-weight: 100 900;
+  font-display: swap;
+  src: url("/fonts/geist.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Geist Mono";
+  font-weight: 400;
+  font-display: swap;
+  src: url("/fonts/geist-mono.woff2") format("woff2");
+}
+
 @theme {
   --font-sans: "Geist", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "Geist Mono", ui-monospace, Menlo, monospace;
@@ -15,6 +30,61 @@
   --color-accent-foreground: #fff;
   --color-border: #3a3a3a;
   --color-ring: #fff;
+
+  --ease-glide: cubic-bezier(0.2, 0.8, 0.2, 1);
+
+  /* Everything animates transform and opacity only, so it runs on the compositor and survives a busy main thread. */
+  --animate-rise: rise 0.7s var(--ease-glide) both;
+  --animate-slide-up: slide-up 0.8s var(--ease-glide) both;
+  --animate-draw: draw 1s var(--ease-glide) both;
+  --animate-curtain: curtain 0.57s cubic-bezier(0.76, 0, 0.24, 1) both;
+  --animate-curtain-letter: curtain-letter 0.95s linear both;
+
+  /* --rise sets the distance, negative to drop in from above. */
+  @keyframes rise {
+    from {
+      opacity: 0;
+      transform: translateY(var(--rise, 16px));
+    }
+  }
+
+  @keyframes slide-up {
+    from {
+      transform: translateY(110%);
+    }
+  }
+
+  @keyframes draw {
+    from {
+      transform: scaleX(0);
+    }
+    to {
+      transform: none;
+    }
+  }
+
+  @keyframes curtain {
+    to {
+      transform: translateY(-101%);
+    }
+  }
+
+  @keyframes curtain-letter {
+    from {
+      transform: translateY(110%);
+      animation-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1);
+    }
+    35% {
+      transform: none;
+    }
+    72% {
+      transform: none;
+      animation-timing-function: cubic-bezier(0.7, 0, 0.84, 0);
+    }
+    to {
+      transform: translateY(-110%);
+    }
+  }
 }
 
 @layer base {
@@ -23,6 +93,7 @@
     color: var(--color-foreground);
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
+    -webkit-tap-highlight-color: transparent;
   }
 
   ::selection {
@@ -57,4 +128,38 @@
   animation:
     intro-type 0.6s both,
     intro-caret 0.01s forwards;
+}
+
+@keyframes band {
+  from {
+    transform: translateX(5%);
+  }
+  to {
+    transform: translateX(-60%);
+  }
+}
+
+/*
+ * Scroll-linked motion runs on native scroll timelines, off the main thread. The sections declare
+ * the timelines: --hero on the version hero, --band on the anywhere band. Browsers without
+ * scroll timelines get the static layout.
+ */
+.scroll-progress {
+  transform: scaleX(0);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  @supports (animation-timeline: view()) {
+    .scroll-progress {
+      animation: draw linear both;
+      animation-timeline: --hero;
+      animation-range: contain;
+    }
+
+    .scroll-band {
+      animation: band linear both;
+      animation-timeline: --band;
+      animation-range: cover;
+    }
+  }
 }

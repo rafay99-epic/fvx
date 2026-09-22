@@ -1,6 +1,5 @@
 import { createRootRoute, Link, Outlet, useRouterState } from "@tanstack/react-router";
-import Lenis from "lenis";
-import { domAnimation, LazyMotion, MotionConfig } from "motion/react";
+import type Lenis from "lenis";
 import { useEffect } from "react";
 import { IntroCurtain } from "@/components/intro-curtain";
 import { SiteFooter } from "@/components/site-footer";
@@ -11,9 +10,17 @@ export const Route = createRootRoute({ component: RootLayout, notFoundComponent:
 
 function RootLayout() {
   useEffect(() => {
-    if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    const lenis = new Lenis({ autoRaf: true });
-    return () => lenis.destroy();
+    // Lenis only smooths wheel scrolling, so touch screens never download it.
+    if (!matchMedia("(pointer: fine) and (prefers-reduced-motion: no-preference)").matches) return;
+    let lenis: Lenis | undefined;
+    let cancelled = false;
+    import("lenis").then((module) => {
+      if (!cancelled) lenis = new module.default({ autoRaf: true });
+    });
+    return () => {
+      cancelled = true;
+      lenis?.destroy();
+    };
   }, []);
 
   const pathname = useRouterState({ select: (state) => state.location.pathname });
@@ -22,16 +29,14 @@ function RootLayout() {
   }, [pathname]);
 
   return (
-    <LazyMotion features={domAnimation} strict>
-      <MotionConfig reducedMotion="user">
-        <IntroCurtain />
-        <SiteNav />
-        <main>
-          <Outlet />
-        </main>
-        <SiteFooter />
-      </MotionConfig>
-    </LazyMotion>
+    <>
+      <IntroCurtain />
+      <SiteNav />
+      <main>
+        <Outlet />
+      </main>
+      <SiteFooter />
+    </>
   );
 }
 

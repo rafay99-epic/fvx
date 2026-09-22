@@ -12,7 +12,7 @@ Bun workspaces. One lockfile at the root.
   (`rafay99-epic/homebrew-apps`) and npm (`@rafay99/fvx`). The pipeline is a port
   of `~/Code/cvx`. macOS and Linux only.
 - `apps/web` is the marketing site at fvx.rafay99.com. Vite, React 19, TanStack
-  Router (file routes), Tailwind v4, shadcn/ui, motion and lenis. Deployed on
+  Router (file routes), Tailwind v4, shadcn/ui and lenis. Deployed on
   Vercel with `apps/web` as the root directory.
 
 ## Commands
@@ -49,7 +49,12 @@ All from the repo root.
   match the CLI. Update it when a command, pin source or install channel changes.
 - Black and white only. Colors come from the `@theme` block in `src/styles.css`.
 - Motion runs on scroll or on view, never on a loop. The opening animation plays
-  once per tab on `/` (every reload in dev). Timings live in `src/lib/intro.ts`.
+  once per tab on `/` (every reload in dev). Start times live in `src/lib/intro.ts`,
+  durations and curves in the `@theme` animations in `src/styles.css`.
+- No animation library. Animate `transform` and `opacity` with CSS so it runs on
+  the compositor: keyframes for the intro, transitions for `Reveal`, native scroll
+  timelines for scroll-linked motion. Lenis loads lazily and only for mouse and
+  trackpad users. Fonts are self-hosted in `public/fonts` and preloaded.
 - Every route needs a title and description in `pages` in `content.ts`. Typecheck
   fails without one. `seo.ts` writes a static HTML page per route, `404.html`,
   `sitemap.xml` and `robots.txt` at build time, so crawlers and link previews
