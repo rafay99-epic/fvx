@@ -32,7 +32,7 @@ base="https://github.com/${REPO}/releases/download/v${VERSION}"
 
 read -r -d '' FORMULA <<EOF || true
 class Fvx < Formula
-  desc "Per-project Flutter SDK switching. Run flutter in any folder, get the version that folder pins"
+  desc "Per-project Flutter SDK switching that follows the version each folder pins"
   homepage "https://github.com/${REPO}"
   version "${VERSION}"
   license "MIT"
@@ -68,7 +68,7 @@ class Fvx < Formula
     man1.install "fvx.1"
     # Tab completion out of the box: runs \`fvx completions <shell>\` at
     # install time and places each script where the shell expects it.
-    generate_completions_from_executable(bin/"fvx", "completions", shells: [:zsh, :bash, :fish])
+    generate_completions_from_executable(bin/"fvx", "completions")
   end
 
   def caveats
