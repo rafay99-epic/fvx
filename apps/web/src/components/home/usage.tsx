@@ -1,6 +1,10 @@
 import { CopyButton } from "@/components/copy-button";
 import { Reveal } from "@/components/reveal";
-import { commands, editorSetting, usage } from "@/content";
+import { Link } from "@tanstack/react-router";
+import { editorSetting, usage } from "@/content";
+import { commandGroups } from "@/docs";
+
+const commands = commandGroups.flatMap((group) => group.commands);
 
 export function Usage() {
   return (
@@ -20,12 +24,17 @@ export function Usage() {
         ))}
       </ol>
 
-      <h3 className="mt-24 text-2xl font-bold tracking-tight md:text-3xl">Everything else</h3>
+      <div className="mt-24 flex flex-wrap items-baseline justify-between gap-4">
+        <h3 className="text-2xl font-bold tracking-tight md:text-3xl">Every command</h3>
+        <Link to="/docs" hash="commands" className="text-sm underline underline-offset-4">
+          Flags and examples
+        </Link>
+      </div>
       <dl className="mt-6 grid md:grid-cols-2 md:gap-x-12">
         {commands.map((command) => (
           <div key={command.name} className="grid grid-cols-[10rem_1fr] gap-4 border-t border-line py-3 text-sm">
-            <dt className="font-mono">{command.name}</dt>
-            <dd className="text-neutral-300">{command.body}</dd>
+            <dt className="font-mono">fvx {command.name}</dt>
+            <dd className="text-neutral-300">{command.summary}</dd>
           </div>
         ))}
       </dl>

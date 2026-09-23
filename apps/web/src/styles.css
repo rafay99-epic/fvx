@@ -32,6 +32,7 @@
   --color-ring: #fff;
 
   --ease-glide: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
 
   /* Everything animates transform and opacity only, so it runs on the compositor and survives a busy main thread. */
   --animate-rise: rise 0.7s var(--ease-glide) both;
@@ -39,6 +40,11 @@
   --animate-draw: draw 1s var(--ease-glide) both;
   --animate-curtain: curtain 0.57s cubic-bezier(0.76, 0, 0.24, 1) both;
   --animate-curtain-letter: curtain-letter 0.95s linear both;
+  /* Terminal typing. The component sets duration, delay and steps() per command. */
+  --animate-type: type 1s both;
+  /* Shows the caret only while its command types. No fill, so it is hidden before and after. */
+  --animate-caret: caret 1s;
+  --animate-burst: burst 0.6s var(--ease-glide) both;
 
   /* --rise sets the distance, negative to drop in from above. */
   @keyframes rise {
@@ -60,6 +66,30 @@
     }
     to {
       transform: none;
+    }
+  }
+
+  @keyframes type {
+    to {
+      transform: translateX(100%);
+    }
+  }
+
+  @keyframes caret {
+    from,
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes burst {
+    from {
+      opacity: 1;
+      transform: scale(0.6);
+    }
+    to {
+      opacity: 0;
+      transform: scale(1.7);
     }
   }
 
@@ -102,8 +132,9 @@
   }
 }
 
+/* The stroke names its color: currentColor would resolve to the transparent fill. */
 @utility text-outline {
-  -webkit-text-stroke: 1.5px currentColor;
+  -webkit-text-stroke: 1.5px var(--color-foreground);
   color: transparent;
 }
 
@@ -141,10 +172,11 @@
 
 /*
  * Scroll-linked motion runs on native scroll timelines, off the main thread. The sections declare
- * the timelines: --hero on the version hero, --band on the anywhere band. Browsers without
- * scroll timelines get the static layout.
+ * the timelines: --hero on the version hero, --band on the anywhere band, --docs on the docs body.
+ * Browsers without scroll timelines get the static layout.
  */
-.scroll-progress {
+.scroll-progress,
+.docs-progress {
   transform: scaleX(0);
 }
 
@@ -153,6 +185,12 @@
     .scroll-progress {
       animation: draw linear both;
       animation-timeline: --hero;
+      animation-range: contain;
+    }
+
+    .docs-progress {
+      animation: draw linear both;
+      animation-timeline: --docs;
       animation-range: contain;
     }
 

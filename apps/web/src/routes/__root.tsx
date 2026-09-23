@@ -15,7 +15,8 @@ function RootLayout() {
     let lenis: Lenis | undefined;
     let cancelled = false;
     import("lenis").then((module) => {
-      if (!cancelled) lenis = new module.default({ autoRaf: true });
+      // anchors: smooth in-page links. Lenis honors scroll-margin, so targets still clear the fixed nav.
+      if (!cancelled) lenis = new module.default({ autoRaf: true, anchors: true });
     });
     return () => {
       cancelled = true;

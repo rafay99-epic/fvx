@@ -1,4 +1,5 @@
-import { type ReactNode, useEffect, useRef, useState } from "react";
+import { type ReactNode, useRef } from "react";
+import { useSeen } from "@/lib/in-view";
 import { cn } from "@/lib/utils";
 
 /** Rises and fades children in the first time 30% of them scrolls into view. */
@@ -15,22 +16,7 @@ export function Reveal({
 }) {
   // One ref that fits both tags `as` allows.
   const ref = useRef<HTMLDivElement & HTMLLIElement>(null);
-  const [shown, setShown] = useState(false);
-
-  useEffect(() => {
-    const element = ref.current;
-    if (!element) return;
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (!entry?.isIntersecting) return;
-        setShown(true);
-        observer.disconnect();
-      },
-      { threshold: 0.3 },
-    );
-    observer.observe(element);
-    return () => observer.disconnect();
-  }, []);
+  const shown = useSeen(ref);
 
   return (
     <Tag
