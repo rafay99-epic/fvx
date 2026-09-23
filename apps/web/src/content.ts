@@ -18,6 +18,11 @@ export const pages = {
     description:
       "fvx runs the Flutter version each folder pins. Shims on PATH, no cd hook, about 10 ms per lookup. Works in scripts, CI and coding agents.",
   },
+  "/docs": {
+    title: "fvx docs: install, setup and every command",
+    description:
+      "Install fvx with Homebrew, npm or a binary, set up the shims once, pin a folder. Every command, flag, pin file and environment variable.",
+  },
   "/about": {
     title: "About fvx",
     description:
@@ -49,8 +54,6 @@ export const install = [
   { id: "brew", label: "Homebrew", command: "brew install rafay99-epic/apps/fvx" },
   { id: "npm", label: "npm", command: "npm i -g @rafay99/fvx" },
 ] as const;
-
-export type InstallId = (typeof install)[number]["id"];
 
 export const hero = {
   title: "Same command. The folder decides.",
@@ -98,17 +101,6 @@ export const usage = [
   { command: "brew install rafay99-epic/apps/fvx", note: "Or npm i -g @rafay99/fvx. Both ship a prebuilt binary." },
   { command: "fvx setup", note: "Writes the shims and one PATH line for zsh, bash and fish. Restart the shell." },
   { command: "fvx use 3.22.3", note: "Pins this folder. Run it without a version to pick from a list." },
-] as const;
-
-export const commands = [
-  { name: "fvx install [v]", body: "Download an official SDK, checksum verified." },
-  { name: "fvx current", body: "The version this folder resolves to, and which file said so." },
-  { name: "fvx which", body: "The real flutter binary for this folder." },
-  { name: "fvx default [v]", body: "Set the global default." },
-  { name: "fvx ls", body: "Installed SDKs." },
-  { name: "fvx rm <v>", body: "Delete an SDK." },
-  { name: "fvx doctor", body: "Check shims, PATH order, the default and this folder." },
-  { name: "fvx upgrade", body: "Update fvx through Homebrew or npm." },
 ] as const;
 
 export const editorSetting = `"dart.getFlutterSdkCommand": { "executable": "fvx", "args": ["resolve"] }`;

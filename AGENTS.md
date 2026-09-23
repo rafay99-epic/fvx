@@ -45,8 +45,10 @@ All from the repo root.
 
 ## Conventions (web)
 
-- Every string on the site lives in `apps/web/src/content.ts`. Facts there must
-  match the CLI. Update it when a command, pin source or install channel changes.
+- Every string on the site lives in `apps/web/src/content.ts`, except `/docs`, whose
+  copy lives in `apps/web/src/docs.ts`. Facts in both must match the CLI, including
+  the sample terminal output in `docs.ts`. Update them when a command, flag, pin
+  source or install channel changes.
 - Black and white only. Colors come from the `@theme` block in `src/styles.css`.
 - Motion runs on scroll or on view, never on a loop. The opening animation plays
   once per tab on `/` (every reload in dev). Start times live in `src/lib/intro.ts`,

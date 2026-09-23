@@ -20,6 +20,9 @@ export function SiteNav() {
           <Link to="/" activeOptions={{ exact: true }} activeProps={active}>
             Home
           </Link>
+          <Link to="/docs" activeProps={active}>
+            Docs
+          </Link>
           <Link to="/about" activeProps={active}>
             About
           </Link>
