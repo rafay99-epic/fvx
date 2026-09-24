@@ -1,8 +1,8 @@
 import { afterAll, beforeAll, expect, test } from "bun:test";
 import { existsSync, mkdirSync, readdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { hostPlatform, install, parseIndex, pickRelease, type Release } from "../src/install";
-import { HOME, SDK_HOME } from "../src/paths";
+import { hostPlatform, install, parseIndex, pickRelease, type Release, windowsTar } from "../src/install";
+import { HOME, IS_WINDOWS, SDK_HOME } from "../src/paths";
 import { findSdk } from "../src/sdks";
 
 const release = (archive: string, channel = "stable", version = "3.22.3"): Release => ({
@@ -42,7 +42,9 @@ beforeAll(async () => {
   const stage = join(HOME, "stage");
   mkdirSync(join(stage, "flutter", "bin"), { recursive: true });
   writeFileSync(join(stage, "flutter", "bin", "flutter"), "#!/bin/sh\n");
-  Bun.spawnSync(["zip", "-qr", "sdk.zip", "flutter"], { cwd: stage });
+  // Windows has no zip command, but its bsdtar writes zip when the name ends in .zip.
+  const zipCommand = IS_WINDOWS ? [windowsTar(), "-a", "-cf", "sdk.zip", "flutter"] : ["zip", "-qr", "sdk.zip", "flutter"];
+  Bun.spawnSync(zipCommand, { cwd: stage });
   const zip = await Bun.file(join(stage, "sdk.zip")).bytes();
   shas.good = new Bun.CryptoHasher("sha256").update(zip).digest("hex");
 

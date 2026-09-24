@@ -1,11 +1,12 @@
 import { chmodSync, mkdirSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
-import { HOME, SDK_HOME } from "../src/paths";
+import { HOME, IS_WINDOWS, SDK_HOME } from "../src/paths";
 
 /**
  * A fake SDK: bin/flutter and bin/dart echo their label and arguments, and
  * exit 7 when the first argument is `fail`, so tests can see which SDK answered
- * and that exit codes pass through.
+ * and that exit codes pass through. On Windows each gets the .bat twin a real
+ * SDK has, which is what the .cmd shims hand off to.
  */
 export function fakeSdk(label: string, version = label): string {
   const root = join(SDK_HOME, label, "flutter");
@@ -14,6 +15,9 @@ export function fakeSdk(label: string, version = label): string {
     const file = join(root, "bin", tool);
     writeFileSync(file, `#!/bin/sh\n[ "$1" = fail ] && exit 7\necho "${tool} ${label} $*"\n`);
     chmodSync(file, 0o755);
+    if (IS_WINDOWS) {
+      writeFileSync(`${file}.bat`, `@echo off\r\nif "%~1"=="fail" exit /b 7\r\necho ${tool} ${label} %*\r\n`);
+    }
   }
   writeFileSync(join(root, "bin", "cache", "flutter.version.json"), JSON.stringify({ frameworkVersion: version }));
   return root;

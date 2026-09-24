@@ -1,3 +1,6 @@
 [test]
 root = "apps/cli"
 preload = ["./apps/cli/tests/preload.ts"]
+# Tests spawn real processes, and a cold Windows runner can take over 5s for the
+# first ones (bun's default per-test timeout is 5000ms).
+timeout = 20000

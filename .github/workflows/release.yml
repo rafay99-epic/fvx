@@ -1,6 +1,6 @@
 name: Release
 
-# Build standalone `fvx` binaries for macOS + Linux, publish a GitHub release,
+# Build standalone `fvx` binaries for macOS, Linux and Windows, publish a GitHub release,
 # and bump the Homebrew formula in rafay99-epic/homebrew-apps, no sha256 is
 # ever hand-edited. Mirrors the Vitals release flow, adapted for a CLI:
 # Bun cross-compiles every target from one Linux runner.
@@ -61,6 +61,7 @@ jobs:
           build darwin-x64   darwin x64   fvx     fvx.1
           build linux-x64    linux  x64   fvx     fvx.1
           build linux-arm64  linux  arm64 fvx     fvx.1
+          build windows-x64  win32  x64   fvx.exe          # Windows (no man page)
           ( cd dist && shasum -a 256 *.tar.gz | tee checksums.txt )
 
       # Signed build provenance for every artifact: `gh attestation verify
@@ -102,7 +103,7 @@ jobs:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
           if [ -z "${NPM_TOKEN:-}" ]; then
-            echo "::warning::NPM_TOKEN not set, skipping npm publish. Add an npm automation token as the NPM_TOKEN secret to publish @rafay99/fvx + its 4 platform packages."
+            echo "::warning::NPM_TOKEN not set, skipping npm publish. Add an npm automation token as the NPM_TOKEN secret to publish @rafay99/fvx + its 5 platform packages."
             exit 0
           fi
           bash .github/scripts/publish-npm.sh

@@ -10,7 +10,8 @@ Bun workspaces. One lockfile at the root.
 - `apps/cli` is fvx itself. Bun + TypeScript, zero runtime dependencies. Shipped as
   `bun build --compile` binaries through GitHub Releases, Homebrew
   (`rafay99-epic/homebrew-apps`) and npm (`@rafay99/fvx`). The pipeline is a port
-  of `~/Code/cvx`. macOS and Linux only.
+  of `~/Code/cvx`. macOS and Linux (arm64, x64), Windows (x64). Homebrew is
+  Unix only.
 - `apps/web` is the marketing site at fvx.rafay99.com. Vite, React 19, TanStack
   Router (file routes), Tailwind v4, shadcn/ui and lenis. Deployed on
   Vercel with `apps/web` as the root directory.
@@ -29,7 +30,8 @@ All from the repo root.
 ## Conventions (CLI, paths relative to `apps/cli`)
 
 - `src/paths.ts` is the only place HOME is resolved. `FVX_HOME` relocates the
-  SDK folder, the shims, the rc files and the pin-walk boundary.
+  SDK folder, the shims, the rc files and the pin-walk boundary. It can't
+  relocate the Windows user PATH (registry), so `setup` skips that under it.
 - `fvx resolve` is the hot path. It runs on every `flutter` and `dart` call: no
   network, no child processes, stdout carries the SDK root and nothing else.
 - `resolve`, `which` and `ls --labels` are scripting surfaces. No decoration.
@@ -37,7 +39,9 @@ All from the repo root.
   version silently.
 - The shim text lives in `src/setup.ts` and records the absolute fvx path at setup
   time, because non-login shells have the shims on PATH but not Homebrew. `doctor` compares it byte for byte, so
-  changing it means users re-run `fvx setup`.
+  changing it means users re-run `fvx setup`. On Windows a `.cmd` twin sits next
+  to each sh shim (cmd and PowerShell use it, Git Bash uses the sh one), and
+  `src/winpath.ts` puts the shims dir on the user PATH instead of rc files.
 - A pin is untrusted text from any cloned repo, and a label becomes a path under
   the SDK folder. Everything goes through `isLabel` in `src/sdks.ts`. `fvx rm ..`
   once resolved to the home directory. Keep that guard.
