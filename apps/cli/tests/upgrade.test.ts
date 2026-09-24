@@ -10,6 +10,7 @@ test("detectChannel reads the install channel off the binary path", () => {
   expect(detectChannel("/Users/x/Library/pnpm/global/5/node_modules/@rafay99/fvx-darwin-arm64/fvx")).toBe("pnpm");
   expect(detectChannel("/home/x/.local/share/pnpm/global/5/.pnpm/node_modules/@rafay99/fvx-linux-x64/fvx")).toBe("pnpm");
   expect(detectChannel("/Users/x/.nvm/versions/node/v22.1.0/lib/node_modules/@rafay99/fvx-darwin-arm64/fvx")).toBe("npm");
+  expect(detectChannel("C:\\Users\\x\\AppData\\Roaming\\npm\\node_modules\\@rafay99\\fvx-win32-x64\\bin\\fvx.exe")).toBe("npm");
   expect(detectChannel("/usr/local/bin/fvx")).toBe("github");
   expect(upgradeCommand("github")).toBeUndefined();
 });

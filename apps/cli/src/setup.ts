@@ -5,12 +5,17 @@
  * `fvx resolve` for the SDK root, then `exec`s the real binary, so no fvx
  * process stays alive under flutter. zsh, bash and fish all run the same file.
  * The only per-shell piece is how the PATH line is spelled.
+ *
+ * On Windows a `.cmd` twin sits next to each sh shim, the way Flutter's own
+ * bin folder pairs `flutter` with `flutter.bat`. cmd and PowerShell pick the
+ * `.cmd`, Git Bash picks the sh script. The PATH entry lives in the registry
+ * (see winpath.ts), not in rc files.
  */
 
 import { chmodSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { basename, dirname, join } from "node:path";
-import { DEFAULT_LINK, HOME, SHIMS } from "./paths";
+import { DEFAULT_LINK, HOME, IS_WINDOWS, SHIMS } from "./paths";
 
 export const TOOLS = ["flutter", "dart"] as const;
 export type Tool = (typeof TOOLS)[number];
@@ -23,8 +28,16 @@ const shellQuote = (s: string) => `'${s.replaceAll("'", `'\\''`)}'`;
 /**
  * Where fvx lives, as PATH spells it at setup time (`/opt/homebrew/bin/fvx`, a
  * symlink that survives upgrades, not the versioned Cellar path behind it).
+ *
+ * Windows wants a real `fvx.exe`. npm puts only `fvx.cmd` on PATH, which would
+ * start Node on every flutter call, so there the running binary is recorded
+ * instead. Its path in node_modules stays the same across npm upgrades.
  */
-export const fvxOnPath = () => Bun.which("fvx") ?? "";
+export function fvxOnPath(): string {
+  const found = Bun.which("fvx") ?? "";
+  if (!IS_WINDOWS || found.toLowerCase().endsWith(".exe")) return found;
+  return basename(process.execPath).toLowerCase() === "fvx.exe" ? process.execPath : "";
+}
 
 /**
  * The shim looks fvx up on PATH first, then at the absolute path recorded at
@@ -45,21 +58,56 @@ exec "$sdk/bin/${tool}" "$@"
 `;
 }
 
+/** Inside a batch `set "name=value"` only `%` needs escaping. Windows paths can't hold `"`. */
+const batchEscape = (s: string) => s.replaceAll("%", "%%");
+
+/**
+ * The Windows twin of `shimFor`, for cmd and PowerShell. Same fallback: no fvx
+ * at the recorded path runs the global default. `for /f` drops the exit code of
+ * `fvx resolve`, but a failed resolve prints nothing on stdout (its error goes
+ * to stderr untouched), so an empty result is the failure signal.
+ *
+ * `%%fvx_exe%%` reaches the inner `cmd /c` as `%fvx_exe%` and expands there,
+ * inside quotes, so spaces, `&` and `)` in the path can't break the line.
+ * The last line has no `call`: cmd hands control to flutter.bat for good, the
+ * batch version of `exec`, and the arguments reach it exactly as typed.
+ */
+export function cmdShimFor(tool: Tool, fvxPath: string = fvxOnPath()): string {
+  return [
+    "@echo off",
+    `rem fvx shim. Resolve the SDK for this folder, then hand off to the real ${tool}.bat.`,
+    "setlocal",
+    `set "fvx_exe=${batchEscape(fvxPath)}"`,
+    `set "fvx_sdk=${batchEscape(DEFAULT_LINK)}"`,
+    'if exist "%fvx_exe%" (',
+    '  set "fvx_sdk="',
+    `  for /f "delims=" %%s in ('""%%fvx_exe%%" resolve"') do set "fvx_sdk=%%s"`,
+    ")",
+    "if not defined fvx_sdk exit /b 1",
+    `"%fvx_sdk%\\bin\\${tool}.bat" %*`,
+    "",
+  ].join("\r\n");
+}
+
+/** Every shim file this platform needs, with its contents. */
+function shimFiles(fvxPath: string): { file: string; text: string }[] {
+  return TOOLS.flatMap((tool) => {
+    const sh = { file: join(SHIMS, tool), text: shimFor(tool, fvxPath) };
+    return IS_WINDOWS ? [sh, { file: join(SHIMS, `${tool}.cmd`), text: cmdShimFor(tool, fvxPath) }] : [sh];
+  });
+}
+
 export function writeShims(fvxPath: string = fvxOnPath()): void {
   mkdirSync(SHIMS, { recursive: true });
-  for (const tool of TOOLS) {
-    const file = join(SHIMS, tool);
-    writeFileSync(file, shimFor(tool, fvxPath));
+  for (const { file, text } of shimFiles(fvxPath)) {
+    writeFileSync(file, text);
     chmodSync(file, 0o755);
   }
 }
 
 /** True when every shim on disk matches what this version would write. */
 export function shimsCurrent(): boolean {
-  return TOOLS.every((tool) => {
-    const file = join(SHIMS, tool);
-    return existsSync(file) && readFileSync(file, "utf8") === shimFor(tool);
-  });
+  return shimFiles(fvxOnPath()).every(({ file, text }) => existsSync(file) && readFileSync(file, "utf8") === text);
 }
 
 type RcFile = {

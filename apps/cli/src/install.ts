@@ -11,7 +11,7 @@
 import { spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, renameSync, rmSync } from "node:fs";
 import { join } from "node:path";
-import { SDK_HOME } from "./paths";
+import { IS_WINDOWS, SDK_HOME } from "./paths";
 import { isLabel } from "./sdks";
 
 // FLUTTER_STORAGE_BASE_URL is Flutter's own mirror switch (used in China), so
@@ -22,11 +22,18 @@ const indexBase = () =>
 export type Release = { version: string; channel: string; archive: string; sha256: string };
 export type ReleaseIndex = { baseUrl: string; releases: Release[] };
 
-type Platform = { os: "macos" | "linux"; arch: "arm64" | "x64" };
+type Platform = { os: "macos" | "linux" | "windows"; arch: "arm64" | "x64" };
 
 export function hostPlatform(): Platform {
-  const os = process.platform === "darwin" ? "macos" : process.platform === "linux" ? "linux" : undefined;
-  if (!os) throw new Error(`fvx install supports macOS and Linux, not ${process.platform}`);
+  const os =
+    process.platform === "darwin"
+      ? "macos"
+      : process.platform === "linux"
+        ? "linux"
+        : process.platform === "win32"
+          ? "windows"
+          : undefined;
+  if (!os) throw new Error(`fvx install supports macOS, Linux and Windows, not ${process.platform}`);
   return { os, arch: process.arch === "arm64" ? "arm64" : "x64" };
 }
 
@@ -98,10 +105,18 @@ async function download(url: string, dest: string): Promise<string> {
   return hasher.digest("hex");
 }
 
+/**
+ * Windows 10 and later ship bsdtar, which reads zip. It is called by absolute
+ * path because Git Bash puts GNU tar first on PATH, and GNU tar can't.
+ */
+export const windowsTar = () => join(process.env.SystemRoot ?? "C:\\Windows", "System32", "tar.exe");
+
 function unpack(archive: string, dest: string): void {
-  const [cmd, args] = archive.endsWith(".zip")
-    ? ["unzip", ["-q", archive, "-d", dest]]
-    : ["tar", ["-xJf", archive, "-C", dest]];
+  const [cmd, args] = IS_WINDOWS
+    ? [windowsTar(), ["-xf", archive, "-C", dest]]
+    : archive.endsWith(".zip")
+      ? ["unzip", ["-q", archive, "-d", dest]]
+      : ["tar", ["-xJf", archive, "-C", dest]];
   const result = spawnSync(cmd, args, { stdio: "inherit" });
   if (result.error || result.status !== 0) throw new Error(`${cmd} failed to unpack ${archive}`);
 }
