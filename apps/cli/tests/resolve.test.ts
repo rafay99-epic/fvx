@@ -1,9 +1,9 @@
 import { beforeAll, expect, test } from "bun:test";
 import { join } from "node:path";
-import { chmodSync, mkdirSync, symlinkSync, writeFileSync } from "node:fs";
+import { chmodSync, existsSync, mkdirSync, symlinkSync, writeFileSync } from "node:fs";
 import { explain, resolve } from "../src/resolve";
 import { HOME, SDK_HOME } from "../src/paths";
-import { findSdk, isLabel, removeSdk, setDefault } from "../src/sdks";
+import { defaultSdk, findSdk, isLabel, removeSdk, setDefault } from "../src/sdks";
 import { fakeSdk, project } from "./helpers";
 
 beforeAll(() => {
@@ -46,6 +46,15 @@ test("nearest folder wins, and a subfolder inherits from above", () => {
   };
   expect(from("packages/old/lib/src")).toBe("3.22.3");
   expect(from("packages")).toBe("3.47.2");
+});
+
+test("repointing the default leaves the SDK it pointed at in place", () => {
+  // On Windows `current` is a junction, and removing one must never follow it.
+  const old = findSdk("3.22.3")!;
+  setDefault(old);
+  setDefault(findSdk("3.47.2")!);
+  expect(defaultSdk()?.label).toBe("3.47.2");
+  expect(existsSync(join(old.root, "bin", "flutter"))).toBe(true);
 });
 
 test("FVX_VERSION overrides every file", () => {
@@ -102,7 +111,7 @@ test("the walk stops at HOME even when HOME is reached through a symlink", () =>
   mkdirSync(join(realHome, "proj"), { recursive: true });
   mkdirSync(join(realHome, ".flutter-sdk"), { recursive: true });
   writeFileSync(join(base, ".fvmrc"), `{"flutter":"9.9.9"}`);
-  symlinkSync(realHome, join(base, "link-home"));
+  symlinkSync(realHome, join(base, "link-home"), "junction"); // the type only matters on Windows
 
   const result = Bun.spawnSync([process.execPath, join(import.meta.dir, "..", "bin", "fvx.ts"), "resolve"], {
     cwd: join(realHome, "proj"),

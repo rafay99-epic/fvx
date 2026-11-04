@@ -10,7 +10,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest]
+        os: [ubuntu-latest, macos-latest, windows-latest]
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
@@ -18,11 +18,13 @@ jobs:
       - run: bun install --frozen-lockfile
       - run: bun run typecheck
       - run: bun test
-      - run: bun run build:web
+      # The site doesn't depend on the OS, and the Unix runners already build it.
+      - if: runner.os != 'Windows'
+        run: bun run build:web
       - name: release-style build compiles
         shell: bash
         run: |
           bun build ./apps/cli/bin/fvx.ts --compile --minify --outfile out/fvx
-          ./out/fvx version
+          ./out/fvx version || ./out/fvx.exe version
         env:
           FVX_HOME: ${{ runner.temp }}/fvx-ci-home

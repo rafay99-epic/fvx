@@ -1,8 +1,9 @@
 import { expect, test } from "bun:test";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { HOME, SHIMS } from "../src/paths";
+import { HOME, IS_WINDOWS, SHIMS } from "../src/paths";
 import { installRc, shimsCurrent, uninstall, withBlock, writeShims } from "../src/setup";
+import { editUserPath, readUserPath, withEntryFirst, withoutEntry } from "../src/winpath";
 
 test("withBlock appends, replaces in place, and removes, leaving other text alone", () => {
   const added = withBlock("alias ll='ls -l'\n", "export A=1");
@@ -45,4 +46,27 @@ test("setup twice leaves one block per rc file, uninstall removes it", () => {
   uninstall();
   expect(readFileSync(zshrc, "utf8")).toBe("export EDITOR=vim\n\n");
   expect(existsSync(SHIMS)).toBe(false);
+});
+
+test("the Windows user PATH gets the shims first exactly once, and loses them cleanly", () => {
+  const shims = "C:\\Users\\me\\.fvx\\shims";
+  expect(withEntryFirst("C:\\a;%USERPROFILE%\\b", shims)).toBe(`${shims};C:\\a;%USERPROFILE%\\b`);
+  // Already present in another case, with a trailing slash: moved to the front, not doubled.
+  expect(withEntryFirst("C:\\a;c:\\users\\me\\.fvx\\shims\\", shims)).toBe(`${shims};C:\\a`);
+  expect(withEntryFirst("", shims)).toBe(shims);
+  expect(withoutEntry(`${shims};C:\\a;;C:\\b`, shims)).toBe("C:\\a;C:\\b");
+});
+
+// Writes the real registry, so it only runs on a throwaway CI runner.
+test.skipIf(!(IS_WINDOWS && process.env.CI))("the Windows user PATH round trip keeps every other entry", () => {
+  const before = readUserPath();
+  const dir = join(HOME, "path-probe");
+  try {
+    expect(editUserPath((path) => withEntryFirst(path, dir))).toBe(true);
+    expect(readUserPath().split(";")[0]).toBe(dir);
+    expect(editUserPath((path) => withEntryFirst(path, dir))).toBe(false);
+  } finally {
+    editUserPath((path) => withoutEntry(path, dir));
+  }
+  expect(readUserPath()).toBe(withoutEntry(before, dir));
 });

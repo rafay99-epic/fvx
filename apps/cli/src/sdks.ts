@@ -2,14 +2,24 @@
  * sdks: what is installed under SDK_HOME and which one is the global default.
  *
  * Layout: <SDK_HOME>/<label>/flutter/bin/flutter, plus <SDK_HOME>/current, a
- * symlink to the default SDK root. The label is usually the version number but
- * can be anything (`stable`, `work`), so matching falls back to the real
- * version read from the SDK itself.
+ * symlink (a junction on Windows) to the default SDK root. The label is
+ * usually the version number but can be anything (`stable`, `work`), so
+ * matching falls back to the real version read from the SDK itself.
  */
 
-import { existsSync, readdirSync, readFileSync, realpathSync, rmSync, symlinkSync, renameSync } from "node:fs";
+import {
+  existsSync,
+  lstatSync,
+  readdirSync,
+  readFileSync,
+  realpathSync,
+  renameSync,
+  rmdirSync,
+  rmSync,
+  symlinkSync,
+} from "node:fs";
 import { join } from "node:path";
-import { DEFAULT_LINK, SDK_HOME } from "./paths";
+import { DEFAULT_LINK, IS_WINDOWS, SDK_HOME } from "./paths";
 
 export type Sdk = {
   label: string;
@@ -94,8 +104,17 @@ export function defaultSdk(): Sdk | undefined {
   }
 }
 
-/** Repoint the default symlink. Link-then-rename so it is never absent. */
+/** Repoint the default symlink. Link-then-rename so it is never absent, except on Windows. */
 export function setDefault(sdk: Sdk): void {
+  if (IS_WINDOWS) {
+    // A junction needs no admin rights or Developer Mode, but one can't be renamed
+    // over another, so this swap has a gap. A resolve landing in it errors, it
+    // never guesses. rmdir drops a junction without following it, and refuses a
+    // real folder that has files in it.
+    if (lstatSync(DEFAULT_LINK, { throwIfNoEntry: false })) rmdirSync(DEFAULT_LINK);
+    symlinkSync(sdk.root, DEFAULT_LINK, "junction");
+    return;
+  }
   const staging = `${DEFAULT_LINK}.next`;
   rmSync(staging, { force: true });
   symlinkSync(sdk.root, staging);

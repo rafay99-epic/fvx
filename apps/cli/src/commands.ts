@@ -8,14 +8,19 @@ import { existsSync, readFileSync, realpathSync, writeFileSync } from "node:fs";
 import { delimiter, join } from "node:path";
 import { COMMANDS, COMPLETION_SHELLS, completionFor, type CompletionShell } from "./completions";
 import { install } from "./install";
-import { DEFAULT_LINK, HOME, SDK_HOME, SHIMS } from "./paths";
+import { DEFAULT_LINK, HOME, IS_WINDOWS, SANDBOXED, SDK_HOME, SHIMS } from "./paths";
 import { DEFAULT_SOURCE, explain, findPin, resolve, workingDir } from "./resolve";
 import { defaultSdk, findSdk, hasDrifted, listSdks, removeSdk, setDefault, type Sdk } from "./sdks";
-import { installRc, rcFiles, shimsCurrent, uninstall, writeShims } from "./setup";
+import { fvxOnPath, installRc, rcFiles, shimsCurrent, uninstall, writeShims } from "./setup";
 import { bold, cyan, die, dim, green, red, yellow } from "./ui";
 import { VERSION } from "./version";
+import { editUserPath, withEntryFirst, withoutEntry } from "./winpath";
 
 const tilde = (path: string) => (path.startsWith(HOME) ? `~${path.slice(HOME.length)}` : path);
+
+/** Flutter on Windows doesn't support a space anywhere in its path. */
+const spacedSdkHome = () => IS_WINDOWS && SDK_HOME.includes(" ");
+const SPACES_FIX = "Flutter on Windows doesn't support spaces in its path. Set FLUTTER_SDK_HOME to a folder without one, like C:\\flutter-sdk";
 
 /** Resolve or exit with the explanation. Shared by every command that needs an SDK. */
 function resolveOrDie() {
@@ -29,7 +34,7 @@ export function cmdResolve(): void {
 }
 
 export function cmdWhich(): void {
-  console.log(join(resolveOrDie().sdk.root, "bin", "flutter"));
+  console.log(join(resolveOrDie().sdk.root, "bin", IS_WINDOWS ? "flutter.bat" : "flutter"));
 }
 
 export function cmdCurrent(): void {
@@ -130,6 +135,7 @@ export async function cmdInstall(args: string[]): Promise<void> {
   }
   if (findSdk(version)) die(`Flutter ${version} is already installed`);
   console.log(`installing Flutter ${bold(version)} into ${tilde(SDK_HOME)}`);
+  if (spacedSdkHome()) console.log(`${yellow("!")} ${SPACES_FIX}`);
   const root = await install(version);
   console.log(`${green("✓")} installed ${tilde(root)}`);
   if (!defaultSdk()) {
@@ -157,33 +163,57 @@ export function cmdRm(args: string[]): void {
 }
 
 export function cmdSetup(args: string[]): void {
+  // On Windows the user PATH lives in the registry, which a FVX_HOME sandbox can't relocate.
+  const userPath = IS_WINDOWS && !SANDBOXED;
   if (args.includes("--uninstall")) {
     const changed = uninstall();
-    console.log(`${green("✓")} removed shims${changed.length ? ` and the PATH block from ${changed.map(tilde).join(", ")}` : ""}`);
+    const fromUserPath = userPath && editUserPath((path) => withoutEntry(path, SHIMS));
+    console.log(
+      `${green("✓")} removed shims${changed.length ? ` and the PATH block from ${changed.map(tilde).join(", ")}` : ""}${fromUserPath ? " and their user PATH entry" : ""}`,
+    );
     return;
   }
   if (args.includes("--print")) {
-    for (const { file, line } of rcFiles()) console.log(`${dim(`# ${tilde(file)}`)}\n${line}`);
+    if (IS_WINDOWS) console.log(`${dim("# first entry of your user PATH")}\n${SHIMS}`);
+    else for (const { file, line } of rcFiles()) console.log(`${dim(`# ${tilde(file)}`)}\n${line}`);
     return;
   }
   writeShims();
   console.log(`${green("✓")} shims written to ${tilde(SHIMS)}`);
-  const { targets, changed } = installRc();
-  if (!targets.length) {
-    console.log(`${yellow("!")} no zsh, bash or fish rc file found. Add the shims to PATH yourself:\n  ${rcFiles()[0]?.line}`);
+  if (IS_WINDOWS) {
+    if (!userPath) {
+      console.log(`${yellow("!")} FVX_HOME is set, so your user PATH was left alone. Put this first on PATH yourself:\n  ${SHIMS}`);
+    } else {
+      console.log(
+        editUserPath((path) => withEntryFirst(path, SHIMS))
+          ? `${green("✓")} shims added to the front of your user PATH. Restart terminals and editors.`
+          : `${green("✓")} PATH entry already in place`,
+      );
+    }
   } else {
-    console.log(
-      changed.length
-        ? `${green("✓")} PATH line added to ${changed.map(tilde).join(", ")}. Restart your shell.`
-        : `${green("✓")} PATH line already in place`,
-    );
+    const { targets, changed } = installRc();
+    if (!targets.length) {
+      console.log(`${yellow("!")} no zsh, bash or fish rc file found. Add the shims to PATH yourself:\n  ${rcFiles()[0]?.line}`);
+    } else {
+      console.log(
+        changed.length
+          ? `${green("✓")} PATH line added to ${changed.map(tilde).join(", ")}. Restart your shell.`
+          : `${green("✓")} PATH line already in place`,
+      );
+    }
   }
-  console.log(`\nFor VS Code and Cursor, add this to your user settings once:\n  ${cyan(`"dart.getFlutterSdkCommand": { "executable": "fvx", "args": ["resolve"] }`)}`);
+  // An editor may launch this without a shell, where npm's fvx.cmd isn't found on Windows. The exe always is.
+  const executable = IS_WINDOWS ? fvxOnPath() || "fvx" : "fvx";
+  console.log(
+    `\nFor VS Code and Cursor, add this to your user settings once:\n  ${cyan(`"dart.getFlutterSdkCommand": { "executable": ${JSON.stringify(executable)}, "args": ["resolve"] }`)}`,
+  );
 }
 
 export function cmdDoctor(): void {
   const pathDirs = (process.env.PATH ?? "").split(delimiter);
-  const firstFlutter = pathDirs.find((dir) => existsSync(join(dir, "flutter")));
+  // What cmd and PowerShell would run. They skip the extensionless sh shim.
+  const names = IS_WINDOWS ? ["flutter.exe", "flutter.cmd", "flutter.bat"] : ["flutter"];
+  const firstFlutter = pathDirs.find((dir) => dir && names.some((name) => existsSync(join(dir, name))));
   const here = resolve();
   const drifted = listSdks().filter(hasDrifted);
   const real = (p: string) => {
@@ -193,11 +223,14 @@ export function cmdDoctor(): void {
       return p;
     }
   };
+  // Windows paths match in any case. VS Code sometimes lowercases the drive letter.
+  const samePath = (a: string, b: string) =>
+    IS_WINDOWS ? real(a).toLowerCase() === real(b).toLowerCase() : real(a) === real(b);
 
   const checks: { ok: boolean; label: string; fix: string }[] = [
     { ok: shimsCurrent(), label: "shims are written and current", fix: "run: fvx setup" },
     {
-      ok: firstFlutter !== undefined && real(firstFlutter) === real(SHIMS),
+      ok: firstFlutter !== undefined && samePath(firstFlutter, SHIMS),
       label: "shims come first on PATH",
       fix: firstFlutter
         ? `${tilde(firstFlutter)} wins instead. Run fvx setup, restart the shell, and move that entry after the shims`
@@ -210,6 +243,7 @@ export function cmdDoctor(): void {
       label: "SDK folder names match their contents",
       fix: drifted.map((sdk) => `${sdk.label} holds ${sdk.version}`).join(", "),
     },
+    ...(IS_WINDOWS ? [{ ok: !spacedSdkHome(), label: "SDK folder path has no spaces", fix: SPACES_FIX }] : []),
   ];
   for (const check of checks) {
     console.log(check.ok ? `${green("✓")} ${check.label}` : `${red("✗")} ${check.label}\n    ${check.fix}`);
