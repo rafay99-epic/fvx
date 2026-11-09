@@ -9,7 +9,7 @@
 const { spawnSync } = require("child_process");
 
 const target = `@rafay99/fvx-${process.platform}-${process.arch}`;
-const binName = "fvx";
+const binName = process.platform === "win32" ? "fvx.exe" : "fvx";
 
 let binary;
 try {
@@ -17,7 +17,7 @@ try {
 } catch {
   console.error(
     `fvx: no prebuilt binary for ${process.platform}-${process.arch}.\n` +
-      `Supported: darwin-arm64, darwin-x64, linux-x64, linux-arm64.\n` +
+      `Supported: darwin-arm64, darwin-x64, linux-x64, linux-arm64, win32-x64.\n` +
       `If your platform is supported, reinstall without --no-optional.`,
   );
   process.exit(1);

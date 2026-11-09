@@ -26,3 +26,10 @@ export const SDK_HOME = process.env.FLUTTER_SDK_HOME || join(HOME, ".flutter-sdk
 /** Symlink to the global default SDK. Used when no project pin applies. */
 export const DEFAULT_LINK = join(SDK_HOME, "current");
 export const SHIMS = join(HOME, ".fvx", "shims");
+/**
+ * FVX_HOME is a sandbox. On Windows the user PATH lives in the registry, which
+ * it can't relocate, so `setup` leaves the registry alone under it.
+ */
+export const SANDBOXED = Boolean(process.env.FVX_HOME);
+/** Windows swaps the sh shims for .cmd twins, rc files for the registry, and the symlink for a junction. */
+export const IS_WINDOWS = process.platform === "win32";

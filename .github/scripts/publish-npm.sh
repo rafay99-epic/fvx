@@ -6,8 +6,9 @@
 #   @rafay99/fvx                     main package: a launcher + optionalDeps
 #   @rafay99/fvx-darwin-arm64  ┐
 #   @rafay99/fvx-darwin-x64    │  per-platform packages, each carrying one
-#   @rafay99/fvx-linux-x64     │  compiled `fvx` binary, gated by os/cpu
-#   @rafay99/fvx-linux-arm64   ┘
+#   @rafay99/fvx-linux-x64     │  compiled `fvx` binary (`fvx.exe` on
+#   @rafay99/fvx-linux-arm64   │  Windows), gated by os/cpu
+#   @rafay99/fvx-win32-x64     ┘
 #
 # npm/bun/pnpm install only the platform package matching the user's machine,
 # and the launcher execs its binary, no postinstall, so `bun add -g` works too.
@@ -30,6 +31,7 @@ PLATFORMS=(
   "darwin x64"
   "linux x64"
   "linux arm64"
+  "win32 x64"
 )
 
 WORK=$(mktemp -d)
@@ -51,7 +53,7 @@ for entry in "${PLATFORMS[@]}"; do
   read -r os arch <<<"$entry"
   pkg="${NAME}-${os}-${arch}"          # e.g. @rafay99/fvx-darwin-arm64
   dir="$WORK/plat-${os}-${arch}"       # flat dir (pkg name has a '/')
-  bin="fvx"
+  bin="fvx"; [ "$os" = "win32" ] && bin="fvx.exe"
   mkdir -p "$dir/bin"
   tar -xzf "$DIST/fvx-${os}-${arch}.tar.gz" -C "$dir/bin" "$bin"
   chmod +x "$dir/bin/${bin}"
@@ -99,11 +101,12 @@ cat > "$main/package.json" <<JSON
     "${NAME}-darwin-arm64": "${NPM_VERSION}",
     "${NAME}-darwin-x64": "${NPM_VERSION}",
     "${NAME}-linux-x64": "${NPM_VERSION}",
-    "${NAME}-linux-arm64": "${NPM_VERSION}"
+    "${NAME}-linux-arm64": "${NPM_VERSION}",
+    "${NAME}-win32-x64": "${NPM_VERSION}"
   }
 }
 JSON
 echo "→ publishing ${NAME}@${NPM_VERSION}"
 publish_if_new "$main" "$NAME"
 
-echo "::notice::Published ${NAME} ${NPM_VERSION} to npm (main + 4 platform packages)."
+echo "::notice::Published ${NAME} ${NPM_VERSION} to npm (main + 5 platform packages)."

@@ -2,11 +2,12 @@
  * upgrade: `fvx upgrade` checks GitHub for a newer release, then runs the
  * right package manager for however this binary was installed. It never
  * replaces the running binary by hand. A raw tarball install gets the release
- * URL instead. Only this command touches the network for updates: there is no
+ * URL instead, and Windows gets the command to run itself. Only this command touches the network for updates: there is no
  * background check and the shim path stays offline.
  */
 
 import { spawnSync } from "node:child_process";
+import { IS_WINDOWS } from "./paths";
 import { bold, die, green } from "./ui";
 import { VERSION } from "./version";
 
@@ -93,6 +94,11 @@ export async function cmdUpgrade(args: string[]): Promise<void> {
   const command = upgradeCommand(detectChannel(process.execPath));
   if (!command) {
     console.log(`This binary didn't come from Homebrew or npm. Download the new one:\n  ${RELEASES_URL}`);
+    return;
+  }
+  // Windows locks a running exe, so the package manager can't replace fvx.exe while fvx waits on it.
+  if (IS_WINDOWS) {
+    console.log(`Run:\n  ${command}`);
     return;
   }
   console.log(`running: ${command}`);
